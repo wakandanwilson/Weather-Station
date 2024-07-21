@@ -1,0 +1,46 @@
+#include <LiquidCrystal_I2C.h>
+#include <NRF24L01_W.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+NRF24L01_W radio(7,8);
+
+void setup() {
+  Serial.begin(9600);
+
+  radio.begin();
+  radio.setReceiveAddress("00001");
+  radio.setTransmitAddress("00002");
+  radio.setChannel(100);
+
+  pinMode(8, OUTPUT);
+  digitalWrite(8, LOW);
+  
+  lcd.init();
+  lcd.backlight();
+}
+
+void loop() {
+  if (radio.available()) {
+    lcd.clear();
+    WeatherReport incomingReport = radio.read();
+    Serial.println(incomingReport.temp);
+    Serial.println(incomingReport.humidity);
+    Serial.println(incomingReport.light);
+
+    lcd.print("Temp: " << incomingReport.temp << "C");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Hum: " << incomingReport.humidity << "%,");
+    
+    lcd.setCursor(9, 1);
+    if (incomingReport.light <= 100) {
+      lcd.print("Night");
+    }
+    else {
+      lcd.print("Day");
+    }
+
+  }
+}
+
+
