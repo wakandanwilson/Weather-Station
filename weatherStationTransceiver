@@ -1,0 +1,31 @@
+#include <DHT.h>
+#include <Adafruit_Sensor.h>
+#include <NRF24L01_W.h>
+
+DHT weatherSensor(4, DHT11);
+const int light = A2;
+NRF24L01_W radio(7,8);
+
+void setup() {
+  Serial.begin(9600);
+  
+  weatherSensor.begin();
+  pinMode(light, INPUT);
+
+  radio.begin();
+  radio.setReceiveAddress("00001");
+  radio.setTransmitAddress("00001");
+  radio.setChannel(100);
+}
+
+void loop() {
+  WeatherReport report;
+
+  report.humidity = weatherSensor.readHumidity();
+  report.temp = weatherSensor.readTemperature();
+  report.light = analogRead(light);
+
+  radio.write(report);
+
+  delay(10000);
+}
